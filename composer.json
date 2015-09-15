@@ -1,5 +1,21 @@
 {
+    "name": "vdbf/twinfield-php",
+    "description": "PHP wrapper for Twinfield (SOAP) API",
+    "authors": [
+        {
+            "name": "Eelke van den Bos",
+            "email": "eelke@vdbf.nl"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Vdbf\\Components\\Twinfield\\": "src/"
+        }
+    },
     "require": {
         "league/oauth2-client": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.8"
     }
 }
