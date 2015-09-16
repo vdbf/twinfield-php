@@ -8,9 +8,21 @@ class ApiClientTest extends PHPUnit_Framework_TestCase
      */
     protected $sut;
 
+    /**
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * @var DummySoapFactory
+     */
+    protected $factory;
+
     public function setUp()
     {
-        $this->sut = new \Vdbf\Components\Twinfield\ApiClient();
+        $this->factory = new DummySoapFactory();
+        $this->options = ['user' => 'vdbf', 'password' => '12345', 'organisation' => 'vdbf-org'];
+        $this->sut = new \Vdbf\Components\Twinfield\ApiClient($this->factory, $this->options);
     }
 
     public function testResourceBuilding()
@@ -21,6 +33,15 @@ class ApiClientTest extends PHPUnit_Framework_TestCase
         //try to build a non-existent resource
         $this->setExpectedException('\\Vdbf\\Components\\Twinfield\\Exception\\UnknownResource');
         $this->sut->resource('NonExistent');
+    }
+
+    public function testAuthentication()
+    {
+        $this->sut->authenticate();
+
+        $builds = $this->factory->getBuilds();
+
+        $this->assertCount(1, $builds);
     }
 
 }

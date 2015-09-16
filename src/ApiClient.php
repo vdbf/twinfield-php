@@ -1,22 +1,52 @@
 <?php namespace Vdbf\Components\Twinfield;
 
 use ReflectionClass;
+use Vdbf\Components\Twinfield\Auth\Session;
 use Vdbf\Components\Twinfield\Exception\UnknownResource;
 
 class ApiClient
 {
 
     /**
-     * @var string
+     * @var Auth\Session
      */
-    protected $sessionId;
+    protected $session;
 
     /**
-     * @return string
+     * @var
      */
-    public function getSessionId()
+    protected $soapFactory;
+
+    /**
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * ApiClient constructor.
+     * @param $soapFactory
+     * @param array $options
+     */
+    public function __construct($soapFactory, $options = [])
     {
-        return $this->sessionId;
+        $this->soapFactory = $soapFactory;
+        $this->options = array_merge($this->getDefaultOptions(), $options);
+    }
+
+    /**
+     * @return Auth\Session
+     */
+    public function getSession()
+    {
+        return $this->session;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSoapFactory()
+    {
+        return $this->soapFactory;
     }
 
     /**
@@ -24,7 +54,21 @@ class ApiClient
      */
     public function authenticate()
     {
-        //do oauth logon
+        if (is_null($this->getSession())) {
+
+            $sessionResource = $this->resource('Session');
+
+            /** @var Response $response */
+            $response = $sessionResource->Logon($this->option('credentials', []));
+
+            $responseBody = $response->getBody();
+
+            $this->session = new Session(
+                $response->getHeaders()->sessionId,
+                $responseBody->cluster,
+                $responseBody->nextAction
+            );
+        }
     }
 
     /**
@@ -58,5 +102,21 @@ class ApiClient
         return (new ReflectionClass($resourceClass))->newInstanceArgs([$this]);
     }
 
+    /**
+     * @return array
+     */
+    protected function getDefaultOptions()
+    {
+        return [];
+    }
 
+    /**
+     * @param string $key
+     * @param mixed $defaultValue
+     * @return mixed
+     */
+    public function option($key, $defaultValue = null)
+    {
+        return isset($this->options[$key]) ? $this->options[$key] : $defaultValue;
+    }
 }
